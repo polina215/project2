@@ -231,7 +231,6 @@ class Main extends JFrame {
             
         });
 
-
         btnClear.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
