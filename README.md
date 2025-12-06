@@ -242,7 +242,6 @@ class Main extends JFrame {
             }
         });
 
-
         add(displayField);
         add(btn0);
         add(btn1);
