@@ -127,6 +127,7 @@ class Main extends JFrame {
                 } else {
                     displayField.setText(displayField.getText() + "5");
                 }
+
             }
         });
         btn6.addActionListener(new ActionListener() {
