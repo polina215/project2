@@ -2,7 +2,43 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+class RoundedButton extends JButton {
+    private int arcWidth = 20;
+    private int arcHeight = 20;
 
+    public RoundedButton(String text) {
+        super(text);
+        setContentAreaFilled(false);
+        setFocusPainted(false);
+        setBorderPainted(false);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        if (getModel().isPressed()) {
+            g2.setColor(getBackground().darker());
+        } else if (getModel().isRollover()) {
+            g2.setColor(getBackground().brighter());
+        } else {
+            g2.setColor(getBackground());
+        }
+
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), arcWidth, arcHeight);
+
+        g2.dispose();
+
+        super.paintComponent(g);
+    }
+
+
+    @Override
+    protected void paintBorder(Graphics g) {
+
+    }
+}
 public class SpaceGameLauncher {
     public static void main(String[] args) {
 
@@ -13,7 +49,7 @@ public class SpaceGameLauncher {
 
     private void createAndShowGUI() {
 
-        JFrame mainFrame = new JFrame("Космическая Игра - главный экран");
+        JFrame mainFrame = new JFrame("игра");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setSize(600, 400);
         mainFrame.setLocationRelativeTo(null);
@@ -21,10 +57,10 @@ public class SpaceGameLauncher {
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
-        mainPanel.setBackground(Color.BLUE);
+        mainPanel.setBackground( new Color(173, 216,230));
 
 
-        JLabel titleLabel = new JLabel("КОСМИЧЕСКАЯ ИГРА", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("главный экран", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 30, 0));
@@ -32,22 +68,21 @@ public class SpaceGameLauncher {
 
         JPanel levelsPanel = new JPanel();
         levelsPanel.setLayout(new GridLayout(2, 2, 20, 20));
-        levelsPanel.setBackground(Color.BLUE);
+        levelsPanel.setBackground(new Color(173, 216,230));
         levelsPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
 
 
-        JButton[] levelButtons = new JButton[4];
-        String[] levelNames = {"Уровень 1", "Уровень 2",
-                "Уровень 3", "Уровень 4"};
-        Color[] buttonColors = {Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE};
+        RoundedButton[] levelButtons = new RoundedButton[4];
+        String[] levelNames = {"Уровень 1", "Уровень 2", "Уровень 3", "Уровень 4"};
+        Color[] buttonColors = {Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE};
 
         for (int i = 0; i < 4; i++) {
-            levelButtons[i] = new JButton(levelNames[i]);
+
+            levelButtons[i] = new RoundedButton(levelNames[i]);
             levelButtons[i].setFont(new Font("Arial", Font.BOLD, 16));
             levelButtons[i].setBackground(buttonColors[i]);
             levelButtons[i].setForeground(Color.BLACK);
             levelButtons[i].setFocusPainted(false);
-
 
             final int levelNumber = i + 1;
             levelButtons[i].addActionListener(new ActionListener() {
@@ -62,10 +97,10 @@ public class SpaceGameLauncher {
 
 
         JPanel rulesPanel = new JPanel();
-        rulesPanel.setBackground(Color.BLUE);
+        rulesPanel.setBackground(new Color(173, 216,230));
         rulesPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        JButton rulesButton = new JButton("Правила");
+        RoundedButton rulesButton = new RoundedButton("Правила");
         rulesButton.setFont(new Font("Arial", Font.BOLD, 18));
         rulesButton.setBackground(Color.WHITE);
         rulesButton.setForeground(Color.BLACK);
@@ -89,7 +124,7 @@ public class SpaceGameLauncher {
         mainFrame.add(mainPanel);
         mainFrame.setVisible(true);
     }
-   private void openLevelWindow(int level) {
+    private void openLevelWindow(int level) {
         JFrame levelFrame = new JFrame("Уровень " + level);
         levelFrame.setSize(500, 400);
 
@@ -127,13 +162,17 @@ public class SpaceGameLauncher {
         titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
 
-        String rulesText = "правила";
+        String rulesText = "Космический корабль покидает исходный пункт с некоторым грузом." +
+                "Ему нужно добраться до конечного пункта, не потеряв и не повредив груз." +
+                "Нажимаю на стрелки 'вперед' и 'назад' доставьте груз в нужное место." +
+                "Угрозы: астероиды и космические пираты (встретятся на пути)" +
+                "Помощь: оружие против пиратов (можно получить при прохождении части пути), возможность отталкнуть один астероид (для получения нужно пролететь через элемент";
 
         JLabel rulesLabel = new JLabel(rulesText);
         rulesLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
 
-        JButton closeButton = new JButton("закрыть");
+        RoundedButton closeButton = new RoundedButton("закрыть");
         closeButton.setFont(new Font("Arial", Font.BOLD, 16));
         closeButton.setBackground(Color.RED);
         closeButton.setForeground(Color.WHITE);
@@ -150,7 +189,7 @@ public class SpaceGameLauncher {
         });
 
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(Color.BLUE);
+        buttonPanel.setBackground(new Color(173, 216,230));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         buttonPanel.add(closeButton);
 
