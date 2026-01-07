@@ -415,7 +415,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
             float dx = shipX - px;
             float dy = shipY - py;
             float distance = (float)Math.sqrt(dx*dx + dy*dy);
-            float speed = 6.0f;
+            float speed = 10.0f; // скорость пуль
             bullets.add(new Bullet(px, py, (dx/distance)*speed, (dy/distance)*speed));
             shootTimer = 0;
         }
