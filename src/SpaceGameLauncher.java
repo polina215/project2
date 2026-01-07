@@ -255,7 +255,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
     private boolean[] starCollected = new boolean[6];
 
 
-
+// расположение пиратов и переменная частоты стрельбы
     private float pirateRelX = 0.9f;
     private float pirateRelY = 0.85f;
     private int shootTimer = 0;
@@ -274,7 +274,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
 
 
-    private int shieldCharges = 0;
+    private int shieldCharges = 0; //количество звезд
 
 
     public Level1GamePanel() {
@@ -313,27 +313,27 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
 
 
-
+// старт и финиш
         g.setColor(new Color(0,191,255));
         g.fillRect((int)(w * 0.05f), (int)(h * 0.9f), 120, 20); // Старт
         g.fillRect((int)(w * 0.85f), (int)(h * 0.1f), 120, 20); // Финиш
 
-
+// вид астероидов
         g.setColor(Color.GRAY);
         for (float[] ast : asteroidsRel) {
             g.fillOval((int)(w * ast[0]), (int)(h * ast[1]), 45, 45);
         }
 
-
+// вид пирата
         g.setColor(Color.YELLOW);
         int px = (int)(w * pirateRelX);
         int py = (int)(h * pirateRelY);
         g.fillPolygon(new int[]{px, px-20, px+20}, new int[]{py-20, py+20, py+20}, 3);
 
-
+// вид пуль
         for (Bullet b : bullets) g.fillOval((int)b.x, (int)b.y, 8, 8);
 
-
+// вид звезд
         g.setColor(new Color(196, 84, 58));
         for (int i = 0; i < starsRel.length; i++) {
             if (!starCollected[i]) {
@@ -342,7 +342,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
                 g.fillPolygon(new int[]{sx, sx+7, sx, sx-7}, new int[]{sy-7, sy, sy+7, sy}, 4);
             }
         }
-
+// вид корабля и ешо защиты от звезд
         if (!gameOver || hasCargo) {
             if (shieldCharges > 0) {
                 g.setColor(Color.CYAN);
@@ -376,7 +376,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
         int h = getHeight();
         if (w <= 0) return;
 
-
+// расширение поля при расширении экрана
         if (lastWidth > 0 && (w != lastWidth || h != lastHeight)) {
             shipX *= (float)w/lastWidth; shipY *= (float)h/lastHeight;
         }
@@ -385,10 +385,10 @@ class Level1GamePanel extends JPanel implements ActionListener {
         shipX += shipVx; shipY += shipVy;
         Rectangle shipRect = new Rectangle((int)shipX, (int)shipY, 40, 40);
 
-
+// столкновение со стенкой
         if (shipX < 0 || shipX > w-40 || shipY < 0 || shipY > h-40) loseGame();
 
-
+//касание со звездой и счет защиты
         for (int i = 0; i < starsRel.length; i++) {
             if (!starCollected[i]) {
                 Rectangle starRect = new Rectangle((int)(w * starsRel[i][0])-10, (int)(h * starsRel[i][1])-10, 20, 20);
@@ -399,7 +399,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
             }
         }
 
-
+// касание астероида
         for (float[] ast : asteroidsRel) {
             if (shipRect.intersects(new Rectangle((int)(w * ast[0]), (int)(h * ast[1]), 45, 45))) {
                 loseGame();
@@ -408,10 +408,10 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
         // частота стрельбы пиратов
         shootTimer++;
-        if (shootTimer > 40) { // Было 60, стало 80 (реже)
+        if (shootTimer > 80) { // 80-1 уровень, 60-2, 40-3, 20-4
             float px = w * pirateRelX;
             float py = h * pirateRelY;
-
+// направление движения пуль
             float dx = shipX - px;
             float dy = shipY - py;
             float distance = (float)Math.sqrt(dx*dx + dy*dy);
@@ -440,7 +440,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
 
 
-
+// попадание пули в корабль
 
             if (bulletRect.intersects(shipRect)) {
                 if (shieldCharges > 0) {
@@ -452,7 +452,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
             }
         }
 
-
+// касание финиша
         if (shipRect.intersects(new Rectangle((int)(w * 0.85f), (int)(h * 0.1f), 120, 20))) win = true;
 
         repaint();
