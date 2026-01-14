@@ -256,8 +256,8 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
 
 // расположение пиратов и переменная частоты стрельбы
-    private float pirateRelX = 0.9f;
-    private float pirateRelY = 0.85f;
+    private float pirateRelX = 0.5f;
+    private float pirateRelY = 0.5f;
     private int shootTimer = 0;
 
 
@@ -322,6 +322,11 @@ class Level1GamePanel extends JPanel implements ActionListener {
         g.setColor(Color.GRAY);
         for (float[] ast : asteroidsRel) {
             g.fillOval((int)(w * ast[0]), (int)(h * ast[1]), 45, 45);
+            g.setColor(Color.DARK_GRAY);
+            g.fillOval((int)(w * ast[0]) + 10, (int)(h * ast[1]) + 8, 12, 12);
+            g.fillOval((int)(w * ast[0]) + 26, (int)(h * ast[1]) + 24, 8, 8);
+            g.fillOval((int)(w * ast[0]) + 8, (int)(h * ast[1]) + 30, 6, 6);
+            g.setColor(Color.GRAY);
         }
 
 // вид пирата
@@ -329,6 +334,11 @@ class Level1GamePanel extends JPanel implements ActionListener {
         int px = (int)(w * pirateRelX);
         int py = (int)(h * pirateRelY);
         g.fillPolygon(new int[]{px, px-20, px+20}, new int[]{py-20, py+20, py+20}, 3);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(new Color(204, 204, 0));
+        g2.setStroke(new BasicStroke(8));
+        g2.drawPolygon(new int[]{px, px-20, px+20}, new int[]{py-20, py+20, py+20}, 3);
+        g2.setStroke(new BasicStroke(1));
 
 // вид пуль
         for (Bullet b : bullets) g.fillOval((int)b.x, (int)b.y, 8, 8);
@@ -408,14 +418,14 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
         // частота стрельбы пиратов
         shootTimer++;
-        if (shootTimer > 80) { // 80-1 уровень, 60-2, 40-3, 20-4
+        if (shootTimer > 40) { // 80-1 уровень, 60-2, 40-3, 20-4
             float px = w * pirateRelX;
             float py = h * pirateRelY;
 // направление движения пуль
-            float dx = shipX - px;
-            float dy = shipY - py;
+            float dx = (shipX + 20) - px;
+            float dy = (shipY + 20) - py;
             float distance = (float)Math.sqrt(dx*dx + dy*dy);
-            float speed = 10.0f; // скорость пуль
+            float speed = 15.0f; // скорость пуль
             bullets.add(new Bullet(px, py, (dx/distance)*speed, (dy/distance)*speed));
             shootTimer = 0;
         }
