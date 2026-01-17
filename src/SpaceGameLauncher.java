@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
- class RoundedButton extends JButton {
+class RoundedButton extends JButton {
     private int arcWidth = 20;
     private int arcHeight = 20;
 
@@ -42,18 +42,30 @@ import java.awt.event.ActionListener;
 }
 public class SpaceGameLauncher {
 
-    public static void main(String[] args) {
 
+    private static int bestScore = 0;
+
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new SpaceGameLauncher().createAndShowGUI();
         });
+    }
+
+    public static void updateScore(int currentScore) {
+        if (currentScore > bestScore) {
+            bestScore = currentScore;
+        }
+    }
+
+    public static int getBestScore() {
+        return bestScore;
     }
 
     private void createAndShowGUI() {
 
         JFrame mainFrame = new JFrame("игра");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setSize(600, 400);
+        mainFrame.setSize(800, 600);
         mainFrame.setLocationRelativeTo(null);
 
 
@@ -128,7 +140,7 @@ public class SpaceGameLauncher {
     }
     private void openLevelWindow(int level) {
         JFrame levelFrame = new JFrame("Уровень " + level);
-        levelFrame.setSize(600, 450); // Чуть больше для игры
+        levelFrame.setSize(900, 700);
         levelFrame.setLocationRelativeTo(null);
 
 
@@ -139,27 +151,6 @@ public class SpaceGameLauncher {
 
             gamePanel.requestFocusInWindow();
         }
-//        if (level == 2) {
-//            Level2GamePanel gamePanel = new Level2GamePanel();
-//            levelFrame.add(gamePanel);
-//
-//
-//            gamePanel.requestFocusInWindow();
-//        }
-//        if (level == 3) {
-//            Level3GamePanel gamePanel = new Level3GamePanel();
-//            levelFrame.add(gamePanel);
-//
-//
-//            gamePanel.requestFocusInWindow();
-//        }
-//        if (level == 4) {
-//            Level4GamePanel gamePanel = new Level4GamePanel();
-//            levelFrame.add(gamePanel);
-//
-//
-//            gamePanel.requestFocusInWindow();
-//        }
         else  {
 
             JPanel levelPanel = new JPanel();
@@ -239,23 +230,25 @@ class Level1GamePanel extends JPanel implements ActionListener {
     private int lastWidth = 0;
     private int lastHeight = 0;
 
+    private int currentScore = 0;
+    private boolean shootingActive = false;
+    private java.util.List<Rectangle> bigCoins = new java.util.ArrayList<>();
+    private java.util.List<Rectangle> smallCoins = new java.util.ArrayList<>();
 
-    // количество и асположение астероидов
+
     private float[][] asteroidsRel = {
-            {0.3f, 0.2f}, {0.4f, 0.5f}, {0.35f, 0.8f},
-            {0.5f, 0.3f}, {0.6f, 0.7f}, {0.55f, 0.1f},
-            {0.7f, 0.4f}, {0.8f, 0.2f}, {0.6f, 0.5f}
+            {0.25f, 0.15f}, {0.55f, 0.25f}, {0.35f, 0.75f},
+            {0.75f, 0.45f}, {0.15f, 0.55f}, {0.55f, 0.05f},
+            {0.8f, 0.15f}, {0.65f, 0.8f}, {0.38f, 0.45f}
     };
 
-    // количество и расположение звезд
     private float[][] starsRel = {
-            {0.5f, 0.2f}, {0.2f, 0.7f}, {0.3f, 0.4f},
-            {0.4f, 0.15f}, {0.5f, 0.6f}, {0.75f, 0.3f}
+            {0.5f, 0.1f}, {0.1f, 0.8f}, {0.3f, 0.35f},
+            {0.4f, 0.05f}, {0.5f, 0.65f}, {0.8f, 0.25f}
     };
     private boolean[] starCollected = new boolean[6];
 
 
-// расположение пиратов и переменная частоты стрельбы
     private float pirateRelX = 0.5f;
     private float pirateRelY = 0.5f;
     private int shootTimer = 0;
@@ -274,12 +267,27 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
 
 
-    private int shieldCharges = 0; //количество звезд
+    private int shieldCharges = 0;
 
 
     public Level1GamePanel() {
         setFocusable(true);
         setBackground(new Color(10, 10, 50));
+        setLayout(null);
+
+        // кнопка сброса
+        JButton resetBtn = new JButton("назад");
+        resetBtn.setBounds(10, 10, 100, 30);
+        resetBtn.addActionListener(e -> resetShip());
+        resetBtn.setFocusable(false);
+        add(resetBtn);
+
+        // кнопка старта
+        JButton shootBtn = new JButton("старт");
+        shootBtn.setBounds(115, 10, 100, 30);
+        shootBtn.addActionListener(e -> shootingActive = true);
+        shootBtn.setFocusable(false);
+        add(shootBtn);
 
         addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
@@ -298,6 +306,36 @@ class Level1GamePanel extends JPanel implements ActionListener {
         timer.start();
     }
 
+    private void resetShip() {
+        shipX = getWidth() * 0.1f;
+        shipY = getHeight() * 0.8f;
+        shipVx = 0; shipVy = 0;
+        gameOver = false;
+        win = false;
+        hasCargo = true;
+        shieldCharges = 0;
+        currentScore = 0;
+        shootingActive = false;
+        bullets.clear();
+        for(int i = 0; i < starCollected.length; i++) starCollected[i] = false;
+        initCoins(getWidth(), getHeight());
+    }
+
+    private void initCoins(int w, int h) {
+        bigCoins.clear();
+        smallCoins.clear();
+        bigCoins.add(new Rectangle((int)(w*0.45f), (int)(h*0.45f), 20, 20));
+        bigCoins.add(new Rectangle((int)(w*0.55f), (int)(h*0.55f), 20, 20));
+        bigCoins.add(new Rectangle((int)(w*0.25f)+50, (int)(h*0.15f), 20, 20));
+        bigCoins.add(new Rectangle((int)(w*0.75f)-50, (int)(h*0.45f), 20, 20));
+        bigCoins.add(new Rectangle((int)(w*0.02f), (int)(h*0.95f), 20, 20));
+        smallCoins.add(new Rectangle((int)(w*0.2f), (int)(h*0.2f), 10, 10));
+        smallCoins.add(new Rectangle((int)(w*0.8f), (int)(h*0.8f), 10, 10));
+        smallCoins.add(new Rectangle((int)(w*0.1f), (int)(h*0.4f), 10, 10));
+        smallCoins.add(new Rectangle((int)(w*0.9f), (int)(h*0.6f), 10, 10));
+        smallCoins.add(new Rectangle((int)(w*0.5f), (int)(h*0.3f), 10, 10));
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -307,16 +345,19 @@ class Level1GamePanel extends JPanel implements ActionListener {
         if (isFirstLaunch && w > 0 && h > 0) {
             shipX = w * 0.1f; shipY = h * 0.8f;
             lastWidth = w; lastHeight = h;
+            initCoins(w, h);
             isFirstLaunch = false;
         }
 
 
-
-
 // старт и финиш
         g.setColor(new Color(0,191,255));
-        g.fillRect((int)(w * 0.05f), (int)(h * 0.9f), 120, 20); // Старт
-        g.fillRect((int)(w * 0.85f), (int)(h * 0.1f), 120, 20); // Финиш
+        g.fillRect((int)(w * 0.05f), (int)(h * 0.9f), 120, 20);
+        g.fillRect((int)(w * 0.85f), (int)(h * 0.1f), 120, 20);
+
+        g.setColor(new Color(192, 192, 192));
+        for (Rectangle r : bigCoins) g.fillOval(r.x, r.y, r.width, r.height);
+        for (Rectangle r : smallCoins) g.fillOval(r.x, r.y, r.width, r.height);
 
 // вид астероидов
         g.setColor(Color.GRAY);
@@ -341,6 +382,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
         g2.setStroke(new BasicStroke(1));
 
 // вид пуль
+        g.setColor(Color.WHITE);
         for (Bullet b : bullets) g.fillOval((int)b.x, (int)b.y, 8, 8);
 
 // вид звезд
@@ -352,13 +394,15 @@ class Level1GamePanel extends JPanel implements ActionListener {
                 g.fillPolygon(new int[]{sx, sx+7, sx, sx-7}, new int[]{sy-7, sy, sy+7, sy}, 4);
             }
         }
-// вид корабля и ешо защиты от звезд
         if (!gameOver || hasCargo) {
             if (shieldCharges > 0) {
                 g.setColor(Color.CYAN);
                 g.drawOval((int)shipX - 10, (int)shipY - 10, 60, 60);
+
+
+                g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.BOLD, 12));
-                g.drawString("x" + shieldCharges, (int)shipX + 40, (int)shipY);
+                g.drawString("*" + shieldCharges, (int)shipX + 5, (int)shipY - 10);
             }
             g.setColor(Color.WHITE);
             g.fillOval((int)shipX, (int)shipY, 40, 40);
@@ -367,6 +411,11 @@ class Level1GamePanel extends JPanel implements ActionListener {
             g.setColor(Color.GREEN);
             g.fillRect((int)shipX + 15, (int)shipY + 15, 10, 10);
         }
+
+        // очки и рекорд
+        g.setColor(new Color(210, 105, 30));
+        g.setFont(new Font("Arial", Font.BOLD, 18));
+        g.drawString("Очки: " + currentScore + " | Рекорд: " + SpaceGameLauncher.getBestScore(), 20, h - 20);
 
         if (gameOver) {
             g.setColor(Color.RED);
@@ -386,19 +435,17 @@ class Level1GamePanel extends JPanel implements ActionListener {
         int h = getHeight();
         if (w <= 0) return;
 
-// расширение поля при расширении экрана
         if (lastWidth > 0 && (w != lastWidth || h != lastHeight)) {
             shipX *= (float)w/lastWidth; shipY *= (float)h/lastHeight;
+            initCoins(w, h);
         }
         lastWidth = w; lastHeight = h;
 
         shipX += shipVx; shipY += shipVy;
         Rectangle shipRect = new Rectangle((int)shipX, (int)shipY, 40, 40);
 
-// столкновение со стенкой
         if (shipX < 0 || shipX > w-40 || shipY < 0 || shipY > h-40) loseGame();
 
-//касание со звездой и счет защиты
         for (int i = 0; i < starsRel.length; i++) {
             if (!starCollected[i]) {
                 Rectangle starRect = new Rectangle((int)(w * starsRel[i][0])-10, (int)(h * starsRel[i][1])-10, 20, 20);
@@ -409,25 +456,39 @@ class Level1GamePanel extends JPanel implements ActionListener {
             }
         }
 
-// касание астероида
+        for (int i = 0; i < bigCoins.size(); i++) {
+            if (shipRect.intersects(bigCoins.get(i))) {
+                bigCoins.remove(i);
+                currentScore += 2;
+                SpaceGameLauncher.updateScore(currentScore);
+            }
+        }
+        for (int i = 0; i < smallCoins.size(); i++) {
+            if (shipRect.intersects(smallCoins.get(i))) {
+                smallCoins.remove(i);
+                currentScore += 1;
+                SpaceGameLauncher.updateScore(currentScore);
+            }
+        }
+
         for (float[] ast : asteroidsRel) {
             if (shipRect.intersects(new Rectangle((int)(w * ast[0]), (int)(h * ast[1]), 45, 45))) {
                 loseGame();
             }
         }
 
-        // частота стрельбы пиратов
-        shootTimer++;
-        if (shootTimer > 40) { // 80-1 уровень, 60-2, 40-3, 20-4
-            float px = w * pirateRelX;
-            float py = h * pirateRelY;
-// направление движения пуль
-            float dx = (shipX + 20) - px;
-            float dy = (shipY + 20) - py;
-            float distance = (float)Math.sqrt(dx*dx + dy*dy);
-            float speed = 15.0f; // скорость пуль
-            bullets.add(new Bullet(px, py, (dx/distance)*speed, (dy/distance)*speed));
-            shootTimer = 0;
+        if (shootingActive) {
+            shootTimer++;
+            if (shootTimer > 40) {
+                float px = w * pirateRelX;
+                float py = h * pirateRelY;
+                float dx = (shipX + 20) - px;
+                float dy = (shipY + 20) - py;
+                float distance = (float)Math.sqrt(dx*dx + dy*dy);
+                float speed = 15.0f;
+                bullets.add(new Bullet(px, py, (dx/distance)*speed, (dy/distance)*speed));
+                shootTimer = 0;
+            }
         }
 
 
@@ -436,7 +497,6 @@ class Level1GamePanel extends JPanel implements ActionListener {
             b.x += b.vx; b.y += b.vy;
             Rectangle bulletRect = new Rectangle((int)b.x, (int)b.y, 8, 8);
 
-            // исчезновение пули при касании астероида
             boolean hitAsteroid = false;
             for (float[] ast : asteroidsRel) {
                 if (bulletRect.intersects(new Rectangle((int)(w * ast[0]), (int)(h * ast[1]), 45, 45))) {
@@ -449,12 +509,9 @@ class Level1GamePanel extends JPanel implements ActionListener {
             }
 
 
-
-// попадание пули в корабль
-
             if (bulletRect.intersects(shipRect)) {
                 if (shieldCharges > 0) {
-                    shieldCharges--; // Щит сработал
+                    shieldCharges--;
                     bullets.remove(i--);
                 } else {
                     loseGame();
@@ -462,12 +519,12 @@ class Level1GamePanel extends JPanel implements ActionListener {
             }
         }
 
-// касание финиша
-        if (shipRect.intersects(new Rectangle((int)(w * 0.85f), (int)(h * 0.1f), 120, 20))) win = true;
+        if (shipRect.intersects(new Rectangle((int)(w * 0.85f), (int)(h * 0.1f), 120, 20))) {
+            win = true;
+            SpaceGameLauncher.updateScore(currentScore);
+        }
 
         repaint();
     }
-    private void loseGame() { gameOver = true; hasCargo = false; repaint(); }
+    private void loseGame() { gameOver = true; hasCargo = false; SpaceGameLauncher.updateScore(currentScore); repaint(); }
 }
-
-
