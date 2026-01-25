@@ -19,18 +19,23 @@ class RoundedButton extends JButton {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+
+        Color btnColor = new Color(25, 25, 50);
         if (getModel().isPressed()) {
-            g2.setColor(getBackground().darker());
+            btnColor = new Color(40, 40, 80);
         } else if (getModel().isRollover()) {
-            g2.setColor(getBackground().brighter());
-        } else {
-            g2.setColor(getBackground());
+            btnColor = new Color(35, 35, 70);
         }
 
+        g2.setColor(btnColor);
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), arcWidth, arcHeight);
 
-        g2.dispose();
 
+        g2.setColor(new Color(0, 210, 255));
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, arcWidth, arcHeight);
+
+        g2.dispose();
         super.paintComponent(g);
     }
 
@@ -71,7 +76,7 @@ public class SpaceGameLauncher {
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
-        mainPanel.setBackground( new Color(173, 216,230));
+        mainPanel.setBackground(new Color(10, 10, 20));
 
 
         JLabel titleLabel = new JLabel("главный экран", SwingConstants.CENTER);
@@ -82,7 +87,7 @@ public class SpaceGameLauncher {
 
         JPanel levelsPanel = new JPanel();
         levelsPanel.setLayout(new GridLayout(2, 2, 20, 20));
-        levelsPanel.setBackground(new Color(173, 216,230));
+        levelsPanel.setBackground(new Color(10, 10, 20));
         levelsPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
 
 
@@ -95,7 +100,7 @@ public class SpaceGameLauncher {
             levelButtons[i] = new RoundedButton(levelNames[i]);
             levelButtons[i].setFont(new Font("Arial", Font.BOLD, 16));
             levelButtons[i].setBackground(buttonColors[i]);
-            levelButtons[i].setForeground(Color.BLACK);
+            levelButtons[i].setForeground(Color.WHITE);
             levelButtons[i].setFocusPainted(false);
 
             final int levelNumber = i + 1;
@@ -111,13 +116,13 @@ public class SpaceGameLauncher {
 
 
         JPanel rulesPanel = new JPanel();
-        rulesPanel.setBackground(new Color(173, 216,230));
+        rulesPanel.setBackground(new Color(10, 10, 20));
         rulesPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
         RoundedButton rulesButton = new RoundedButton("Правила");
         rulesButton.setFont(new Font("Arial", Font.BOLD, 18));
         rulesButton.setBackground(Color.WHITE);
-        rulesButton.setForeground(Color.BLACK);
+        rulesButton.setForeground(Color.WHITE);
         rulesButton.setFocusPainted(false);
 
         rulesButton.addActionListener(new ActionListener() {
@@ -172,12 +177,14 @@ public class SpaceGameLauncher {
 
         JPanel rulesPanel = new JPanel();
         rulesPanel.setLayout(new BorderLayout());
-        rulesPanel.setBackground(new Color(173, 216,230));
+        rulesPanel.setBackground(new Color(10,  10,40));
+
 
         JLabel titleLabel = new JLabel();
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(Color.YELLOW);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
 
 
         String rulesText = "<html><div style='text-align: center;'>"+"<p>1. Космический корабль покидает исходный пункт с некоторым грузом.</p>" +
@@ -188,7 +195,7 @@ public class SpaceGameLauncher {
 
         JLabel rulesLabel = new JLabel(rulesText);
         rulesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
+        rulesLabel.setForeground(Color.WHITE);
 
         RoundedButton closeButton = new RoundedButton("закрыть");
         closeButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -207,7 +214,7 @@ public class SpaceGameLauncher {
         });
 
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(new Color(173, 216,230));
+        buttonPanel.setBackground(new Color(10,10,40));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         buttonPanel.add(closeButton);
 
@@ -363,6 +370,8 @@ class Level1GamePanel extends JPanel implements ActionListener {
         g.setColor(Color.GRAY);
         for (float[] ast : asteroidsRel) {
             g.fillOval((int)(w * ast[0]), (int)(h * ast[1]), 45, 45);
+            g.setColor(new Color(255, 255, 255, 20));
+            g.fillArc((int)(w * ast[0]), (int)(h * ast[1]), 45, 45, 90, 180);
             g.setColor(Color.DARK_GRAY);
             g.fillOval((int)(w * ast[0]) + 10, (int)(h * ast[1]) + 8, 12, 12);
             g.fillOval((int)(w * ast[0]) + 26, (int)(h * ast[1]) + 24, 8, 8);
@@ -383,7 +392,14 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
 // вид пуль
         g.setColor(Color.WHITE);
-        for (Bullet b : bullets) g.fillOval((int)b.x, (int)b.y, 8, 8);
+        for (Bullet b : bullets) {
+
+            g.setColor(new Color(255, 255, 255, 60));
+            g.fillOval((int)b.x - 2, (int)b.y - 2, 12, 12);
+
+            g.setColor(Color.WHITE);
+            g.fillOval((int)b.x, (int)b.y, 8, 8);
+        }
 
 // вид звезд
         g.setColor(new Color(196, 84, 58));
