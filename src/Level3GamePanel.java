@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 class Level3GamePanel extends JPanel implements ActionListener {
+    private int levelNumber;
     private Timer timer;
     private float shipX = 0, shipY = 0;
     private float shipVx = 0, shipVy = 0;
@@ -54,7 +55,8 @@ class Level3GamePanel extends JPanel implements ActionListener {
     private int shieldCharges = 0;
 
 
-    public Level3GamePanel() {
+    public Level3GamePanel( int levelNumber) {
+        this.levelNumber = levelNumber;
         setFocusable(true);
         setBackground(new Color(10, 10, 50));
         setLayout(null);
@@ -315,6 +317,16 @@ class Level3GamePanel extends JPanel implements ActionListener {
         if (shipRect.intersects(new Rectangle((int)(w * 0.85f), (int)(h * 0.1f), 120, 20))) {
             win = true;
             SpaceGameLauncher.updateScore(currentScore);
+            // переход на следующий уровень
+            timer.stop();
+
+            Window window = SwingUtilities.getWindowAncestor(this);
+            window.dispose();
+
+
+            if (levelNumber < 4) {
+                SpaceGameLauncher.openLevelWindow(levelNumber + 1);
+            }
         }
 
         repaint();

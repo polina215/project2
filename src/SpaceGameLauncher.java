@@ -107,7 +107,7 @@ public class SpaceGameLauncher {
             levelButtons[i].addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    openLevelWindow(levelNumber);
+                    SpaceGameLauncher.openLevelWindow(levelNumber);
                 }
             });
 
@@ -143,35 +143,35 @@ public class SpaceGameLauncher {
         mainFrame.add(mainPanel);
         mainFrame.setVisible(true);
     }
-    private void openLevelWindow(int level) {
+    public static void openLevelWindow(int level) {
         JFrame levelFrame = new JFrame("Уровень " + level);
         levelFrame.setSize(900, 700);
         levelFrame.setLocationRelativeTo(null);
 
 
         if (level == 1) {
-            Level1GamePanel gamePanel = new Level1GamePanel();
+            Level1GamePanel gamePanel = new Level1GamePanel(1);
             levelFrame.add(gamePanel);
 
 
             gamePanel.requestFocusInWindow();
         }
         if (level == 2) {
-            Level2GamePanel gamePanel = new Level2GamePanel();
+            Level2GamePanel gamePanel = new Level2GamePanel(2);
             levelFrame.add(gamePanel);
 
 
             gamePanel.requestFocusInWindow();
         }
         if (level == 3) {
-            Level3GamePanel gamePanel = new Level3GamePanel();
+            Level3GamePanel gamePanel = new Level3GamePanel(3);
             levelFrame.add(gamePanel);
 
 
             gamePanel.requestFocusInWindow();
         }
         if (level == 4) {
-            Level4GamePanel gamePanel = new Level4GamePanel();
+            Level4GamePanel gamePanel = new Level4GamePanel(4);
             levelFrame.add(gamePanel);
 
 
