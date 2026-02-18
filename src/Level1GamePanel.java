@@ -4,6 +4,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 class Level1GamePanel extends JPanel implements ActionListener {
+
+    private int[] asteroidHits = new int[9]; // счетчик попаданий для каждого астероида
+    private boolean[] isMagnetic = {true, false, false, false, false, true, false, false, false}; // 0 и 5 индексы (не рядом)
+    private java.util.List<float[]> smallAsteroids = new java.util.ArrayList<>(); // список мелких осколков
+
+    // Для тумана
+    private float fogOpacity = 0f;
+    private float fogRadius = 0f;
+    private boolean fogExpanding = false;
+    private Timer fogTimer;
+
+    // Для телепортов
+    private float teleportAnim = 0; // для анимации спирали
+
     private int levelNumber;
     private Timer timer;
     private float shipX = 0, shipY = 0;
@@ -24,7 +38,7 @@ class Level1GamePanel extends JPanel implements ActionListener {
     private float[][] asteroidsRel = {
             {0.25f, 0.15f}, {0.55f, 0.25f}, {0.35f, 0.75f},
             {0.75f, 0.45f}, {0.15f, 0.55f}, {0.55f, 0.05f},
-            {0.8f, 0.15f}, {0.65f, 0.8f}, {0.38f, 0.45f}
+            {0.8f, 0.30f}, {0.65f, 0.8f}, {0.38f, 0.45f}
     };
 
     private float[][] starsRel = {
@@ -147,15 +161,32 @@ class Level1GamePanel extends JPanel implements ActionListener {
 
 // вид астероидов
         g.setColor(Color.GRAY);
-        for (float[] ast : asteroidsRel) {
+
+        teleportAnim += 0.2; // Увеличиваем счетчик анимации
+        drawSpiral(g, (int)(w * 0.05f), (int)(h * 0.8f), new Color(100, 100, 120, 150)); // Старт
+        drawSpiral(g, (int)(w * 0.8f), (int)(h * 0.15f), new Color(0, 191, 255, 200)); // Финиш
+
+
+        for (int i = 0; i < asteroidsRel.length; i++) {
+            float[] ast = asteroidsRel[i];
+            if (ast[0] < 0) continue;
+
+
+            g.setColor(isMagnetic[i] ? new Color(70, 80, 100) : Color.GRAY);
+
             g.fillOval((int)(w * ast[0]), (int)(h * ast[1]), 45, 45);
+
+
             g.setColor(new Color(255, 255, 255, 20));
             g.fillArc((int)(w * ast[0]), (int)(h * ast[1]), 45, 45, 90, 180);
             g.setColor(Color.DARK_GRAY);
             g.fillOval((int)(w * ast[0]) + 10, (int)(h * ast[1]) + 8, 12, 12);
-            g.fillOval((int)(w * ast[0]) + 26, (int)(h * ast[1]) + 24, 8, 8);
-            g.fillOval((int)(w * ast[0]) + 8, (int)(h * ast[1]) + 30, 6, 6);
-            g.setColor(Color.GRAY);
+        }
+
+
+        g.setColor(Color.GRAY);
+        for (float[] sa : smallAsteroids) {
+            g.fillOval((int)sa[0], (int)sa[1], 22, 22); // Рисуем маленькие осколки
         }
 
 // вид пирата
@@ -206,6 +237,30 @@ class Level1GamePanel extends JPanel implements ActionListener {
             g.setColor(Color.GREEN);
             g.fillRect((int)shipX + 15, (int)shipY + 15, 10, 10);
         }
+        if (fogOpacity > 0) {
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, fogOpacity));
+            g2d.setColor(Color.WHITE);
+
+
+            java.awt.geom.Area fogArea = new java.awt.geom.Area(new Rectangle(0, 0, w, h));
+            java.awt.geom.Ellipse2D hole = new java.awt.geom.Ellipse2D.Float(shipX - 40, shipY - 40, 120, 120);
+            fogArea.subtract(new java.awt.geom.Area(hole));
+
+            g2d.fill(fogArea);
+            g2d.dispose();
+
+
+            if (fogExpanding) {
+                fogOpacity += 0.04f;
+                if (fogOpacity >= 0.7f) fogExpanding = false;
+            } else {
+                fogOpacity -= 0.1f; // Постепенное затухание
+            }
+        }
 
         // очки и рекорд
         g.setColor(new Color(210, 105, 30));
@@ -237,7 +292,29 @@ class Level1GamePanel extends JPanel implements ActionListener {
         lastWidth = w; lastHeight = h;
 
         shipX += shipVx; shipY += shipVy;
+        for (int i = 0; i < asteroidsRel.length; i++) {
+            if (isMagnetic[i]) {
+                float ax = w * asteroidsRel[i][0] + 22.5f; // центр астероида
+                float ay = h * asteroidsRel[i][1] + 22.5f;
+                float dx = ax - (shipX + 20);
+                float dy = ay - (shipY + 20);
+                float dist = (float)Math.sqrt(dx*dx + dy*dy);
+
+                if (dist < 45 * 2.5f) { // расстояние 2.5 диаметра
+                    shipVx += (dx / dist) * 0.2f;
+                    shipVy += (dy / dist) * 0.2f;
+                }
+            }
+        }
         Rectangle shipRect = new Rectangle((int)shipX, (int)shipY, 40, 40);
+        Rectangle startTeleport = new Rectangle((int)(w * 0.05f), (int)(h * 0.8f), 40, 60);
+        Rectangle finishTeleport = new Rectangle((int)(w * 0.8f), (int)(h * 0.15f), 40, 60);
+
+        if (shipRect.intersects(finishTeleport)) {
+            shipX = (float)(w * 0.05f) + 50;
+            shipY = (float)(h * 0.8f);
+            shipVx = 0; shipVy = 0; // оюнуляем скорость
+        }
 
         if (shipX < 0 || shipX > w-40 || shipY < 0 || shipY > h-40) loseGame();
 
@@ -293,15 +370,42 @@ class Level1GamePanel extends JPanel implements ActionListener {
             Rectangle bulletRect = new Rectangle((int)b.x, (int)b.y, 8, 8);
 
             boolean hitAsteroid = false;
-            for (float[] ast : asteroidsRel) {
-                if (bulletRect.intersects(new Rectangle((int)(w * ast[0]), (int)(h * ast[1]), 45, 45))) {
-                    hitAsteroid = true; break;
+            for (int j = 0; j < asteroidsRel.length; j++) {
+                Rectangle astRect = new Rectangle((int)(w * asteroidsRel[j][0]), (int)(h * asteroidsRel[j][1]), 45, 45);
+                if (bulletRect.intersects(astRect)) {
+                    hitAsteroid = true;
+                    if (!isMagnetic[j]) { // Сине-серые не разрушаются
+                        asteroidHits[j]++;
+                        if (asteroidHits[j] >= 2) {
+                            //  создание 2 мелких астероидов
+                            float ax = w * asteroidsRel[j][0] + 22.5f;
+                            float ay = h * asteroidsRel[j][1] + 22.5f;
+                            float px = w * pirateRelX;
+                            float py = h * pirateRelY;
+
+
+                            float vX = ax - px; float vY = ay - py;
+                            float vLen = (float)Math.sqrt(vX*vX + vY*vY);
+
+                            float pX = -vY / vLen; float pY = vX / vLen;
+                            float offset = 90; // Расстояние 2 диаметра
+
+                            smallAsteroids.add(new float[]{ax + pX * offset - 11, ay + pY * offset - 11});
+                            smallAsteroids.add(new float[]{ax - pX * offset - 11, ay - pY * offset - 11});
+
+                            asteroidsRel[j][0] = -10; // Убираем старый астероид за экран
+                            startFogEffect();
+                        }
+                    }
+                    break;
                 }
             }
 
             if (hitAsteroid || b.x < 0||b.x > w || b.y < 0 || b.y > h) {
                 bullets.remove(i--); continue;
             }
+
+
 
 
             if (bulletRect.intersects(shipRect)) {
@@ -332,4 +436,21 @@ class Level1GamePanel extends JPanel implements ActionListener {
         repaint();
     }
     private void loseGame() { gameOver = true; hasCargo = false; SpaceGameLauncher.updateScore(currentScore); repaint(); }
+    private void startFogEffect() {
+        fogExpanding = true;
+        fogOpacity = 0.1f;
+        fogRadius = 0;
+    }
+    private void drawSpiral(Graphics g, int x, int y, Color c) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setColor(c);
+        g2.setStroke(new BasicStroke(2));
+        for (int i = 0; i < 6; i++) {
+
+            int shift = (int)(Math.sin(teleportAnim + i * 0.8) * 8);
+            g2.drawOval(x + 10 + shift, y + i * 10, 25, 8);
+            g2.drawOval(x + 10 - shift, y + i * 10, 25, 8);
+        }
+        g2.dispose();
+    }
 }
