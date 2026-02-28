@@ -155,15 +155,15 @@ class Level3GamePanel extends JPanel implements ActionListener {
         g.fillRect((int)(w * 0.05f), (int)(h * 0.9f), 120, 20);
         g.fillRect((int)(w * 0.85f), (int)(h * 0.1f), 120, 20);
 
-        g.setColor(new Color(192, 192, 192));
+        g.setColor(new Color(255, 255, 255));
         for (Rectangle r : bigCoins) g.fillOval(r.x, r.y, r.width, r.height);
         for (Rectangle r : smallCoins) g.fillOval(r.x, r.y, r.width, r.height);
 
 // вид астероидов
         g.setColor(Color.GRAY);
         teleportAnim += 0.2; // Увеличиваем счетчик анимации
-        drawSpiral(g, (int)(w * 0.05f), (int)(h * 0.8f), new Color(100, 100, 120, 150)); // Старт
-        drawSpiral(g, (int)(w * 0.8f), (int)(h * 0.15f), new Color(0, 191, 255, 200)); // Финиш
+        drawSpiral(g, (int)(w * 0.05f), (int)(h * 0.8f), new Color(0, 100, 200, 200)); // Старт
+        drawSpiral(g, (int)(w * 0.8f), (int)(h * 0.15f), new Color(0, 100, 200, 200)); // Финиш
 
 
         for (int i = 0; i < asteroidsRel.length; i++) {
@@ -171,12 +171,12 @@ class Level3GamePanel extends JPanel implements ActionListener {
             if (ast[0] < 0) continue;
 
 
-            g.setColor(isMagnetic[i] ? new Color(70, 80, 100) : Color.GRAY);
+            g.setColor(isMagnetic[i] ? new Color(70, 70, 100) : Color.GRAY);
 
             g.fillOval((int)(w * ast[0]), (int)(h * ast[1]), 45, 45);
 
 
-            g.setColor(new Color(255, 255, 255, 20));
+            g.setColor(new Color(255, 255, 255, 15));
             g.fillArc((int)(w * ast[0]), (int)(h * ast[1]), 45, 45, 90, 180);
             g.setColor(Color.DARK_GRAY);
             g.fillOval((int)(w * ast[0]) + 10, (int)(h * ast[1]) + 8, 12, 12);
@@ -200,13 +200,13 @@ class Level3GamePanel extends JPanel implements ActionListener {
         g2.setStroke(new BasicStroke(1));
 
 // вид пуль
-        g.setColor(Color.WHITE);
+        g.setColor(new Color(204, 204, 0, 200));
         for (Bullet b : bullets) {
 
-            g.setColor(new Color(255, 255, 255, 60));
+            g.setColor(new Color(204, 204, 0, 200));
             g.fillOval((int)b.x - 2, (int)b.y - 2, 12, 12);
 
-            g.setColor(Color.WHITE);
+            g.setColor(new Color(204, 204, 0, 200));
             g.fillOval((int)b.x, (int)b.y, 8, 8);
         }
 
@@ -269,11 +269,11 @@ class Level3GamePanel extends JPanel implements ActionListener {
         if (gameOver) {
             g.setColor(Color.RED);
             g.setFont(new Font("Arial", Font.BOLD, 30));
-            g.drawString("ГРУЗ ПОТЕРЯН!", w/2 - 120, h/2);
+            g.drawString("КОРАБЛЬ РАЗБИЛСЯ", w/2 - 120, h/2);
         } else if (win) {
             g.setColor(Color.GREEN);
             g.setFont(new Font("Arial", Font.BOLD, 30));
-            g.drawString("ГРУЗ ДОСТАВЛЕН!", w/2 - 150, h/2);
+            g.drawString("", w/2 - 150, h/2);
         }
     }
 
